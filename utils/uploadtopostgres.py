@@ -2,23 +2,10 @@ import pandas as pd
 import psycopg2
 from psycopg2 import sql
 import time
-from dotenv import load_dotenv
 import os
+import utils.dbinterface as db
 
-load_dotenv()
 
-def connect_to_db():
-    try:
-        connection = psycopg2.connect(
-            host=os.getenv("DB_HOST"),
-            dbname=os.getenv("POSTGRES_DB"),
-            user=os.getenv("POSTGRES_USER"),
-            password=os.getenv("POSTGRES_PASSWORD")
-        )
-        return connection
-    except Exception as e:
-        print("Error connecting to the database:", e)
-        return None
 
 def create_table(cursor):
     create_table_query = """
@@ -77,7 +64,7 @@ def main():
     ticker = input("Enter the ticker symbol: ")
     csv_file_path = input(f"Enter the path to the CSV file for {ticker}: ")
 
-    connection = connect_to_db()
+    connection = db.connect_to_db()
     if connection is None:
         return
 
