@@ -3,9 +3,8 @@ import psycopg2
 from psycopg2 import sql
 import time
 import os
-import utils.dbinterface as db
-
-
+import dbinterface as db
+import re  # Import regex module to extract ticker from filename
 
 def create_table(cursor):
     create_table_query = """
@@ -61,8 +60,7 @@ def upload_csv_to_db(csv_file_path, ticker, cursor):
         ))
 
 def main():
-    ticker = input("Enter the ticker symbol: ")
-    csv_file_path = input(f"Enter the path to the CSV file for {ticker}: ")
+    folder_path = input("Enter the path to the folder containing the CSV files: ")
 
     connection = db.connect_to_db()
     if connection is None:
@@ -73,8 +71,12 @@ def main():
     create_table(cursor)
 
     try:
-        upload_csv_to_db(csv_file_path, ticker, cursor)
-        print("Data uploaded successfully!")
+        for filename in os.listdir(folder_path):
+            if filename.endswith(".csv"):
+                ticker = re.match(r"([A-Za-z]+)", filename).group(1)
+                csv_file_path = os.path.join(folder_path, filename)
+                upload_csv_to_db(csv_file_path, ticker.upper(), cursor)
+                print(f"Data from {filename} uploaded successfully!")
         connection.commit()
     except Exception as e:
         print("Error uploading data:", e)

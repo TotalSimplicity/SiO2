@@ -37,3 +37,14 @@ def read_data_range(cursor, ticker, startTime, endTime):
         data = [dict(zip(colnames, row)) for row in result]
         return data
     return None
+
+def read_ticker(ticker):
+    cursor = connect_to_db().cursor()
+    query = sql.SQL("SELECT * FROM hist_stock_data WHERE ticker = %s;")
+    cursor.execute(query, (ticker,))
+    result = cursor.fetchall()
+    if result:
+        colnames = [desc[0] for desc in cursor.description]
+        data = [dict(zip(colnames, row)) for row in result]
+        return data
+    return None
