@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./data/dbdata:/var/lib/postgresql/data
+      - /mnt/storagebin/dockerimages/stock-ai/data/dbdata:/var/lib/postgresql/data
 
   pgadmin:
     image: elestio/pgadmin:latest
@@ -22,7 +22,7 @@ services:
     ports:
       - "5050:80"
     volumes:
-      - ./data/servers.json:/pgadmin4/servers.json
+      - /mnt/storagebin/dockerimages/stock-ai/data/servers.json:/pgadmin4/servers.json
     depends_on:
       - timescaledb
 
