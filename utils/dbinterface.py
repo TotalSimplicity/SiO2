@@ -48,3 +48,40 @@ def read_ticker(ticker):
         data = [dict(zip(colnames, row)) for row in result]
         return data
     return None
+
+def get_ticker_stats():
+    """Get statistics about available ticker data"""
+    connection = connect_to_db()
+    if connection is None:
+        return None
+        
+    cursor = connection.cursor()
+    try:
+        query = """
+        SELECT 
+            ticker,
+            COUNT(*) as data_points,
+            MIN(time) as earliest_date,
+            MAX(time) as latest_date,
+            (MAX(time) - MIN(time)) as date_range
+        FROM hist_stock_data
+        GROUP BY ticker
+        ORDER BY data_points DESC;
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+        
+        # Convert to list of dicts for easier handling
+        stats = []
+        for row in results:
+            stats.append({
+                'ticker': row[0],
+                'data_points': row[1],
+                'earliest_date': row[2],
+                'latest_date': row[3],
+                'date_range': row[4]
+            })
+        return stats
+    finally:
+        cursor.close()
+        connection.close()
