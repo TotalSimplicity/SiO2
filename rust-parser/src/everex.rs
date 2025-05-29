@@ -132,6 +132,8 @@ impl RawStockData {
         pricea_n * vola_n / 100.0
     }
 
+    
+
     pub fn calculate_rrof(
         bar_flow_values: &[f64],
         length: usize
@@ -166,6 +168,25 @@ impl RawStockData {
         Some(rrof)
     }
 
+    pub fn calculate_rrof_smooth(rrof_values: &[f64], smooth_length: usize) -> Option<f64> {
+        if rrof_values.len() < smooth_length || smooth_length == 0 {
+            return None;
+        }
+
+        let recent_rrof_values = &rrof_values[rrof_values.len() - smooth_length..];
+        averaging::simple_moving_average(recent_rrof_values, smooth_length)
+    }
+
+
+    pub fn calculate_signal_line(rrof_smooth_values: &[f64], signal_length: usize) -> Option<f64> {
+        if rrof_smooth_values.len() < signal_length || signal_length == 0 {
+            return None;
+        }
+
+        let recent_rrof_smooth_values = &rrof_smooth_values[rrof_smooth_values.len() - signal_length..];
+        averaging::simple_moving_average(recent_rrof_smooth_values, signal_length)
+    }
+
 }
 
 fn normalize_function(ratio: f64) -> f64 {
@@ -187,3 +208,4 @@ fn normalize_function(ratio: f64) -> f64 {
         0.1
     }
 }
+

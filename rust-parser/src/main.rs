@@ -23,7 +23,9 @@ fn main() {
    
     let volume_arr = RawStockData::get_specific_array(data_array, "volume");
 
-    for volume in volume_arr {
-        println!("{}", volume);
-    }
+    let lookback_len = 20;
+
+   
+
+   
 }

@@ -26,7 +26,7 @@ fn exponential_moving_average(data: &[f64], length: usize) -> Option<f64> {
     Some(ema)
 }
 
-fn weighted_moving_average(data: &[f64], length: usize) -> Option<f64> {
+pub fn weighted_moving_average(data: &[f64], length: usize) -> Option<f64> {
     if data.len() < length || length == 0 {
         return None;
     }
