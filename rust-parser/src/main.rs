@@ -1,6 +1,8 @@
 mod stockdata;
 mod db;
-use stockdata::get_data_from_db;
+mod averaging;
+mod everex;
+use stockdata::RawStockData;
 use std::env;
 
 
@@ -14,20 +16,14 @@ fn handle_ticker_arg() -> String {
     "XAUUSD".to_string()
 }
 
-
-
 fn main() {
     let ticker = handle_ticker_arg();
     
-   for datapoint in get_data_from_db(&ticker).unwrap(){
-    println!("Ticker: {}, Time: {}, Open: {}, High: {}, Low: {}, Close: {}, Volume: {}",
-             datapoint.ticker,
-             datapoint.timestamp.to_rfc3339(),
-             datapoint.open,
-             datapoint.high,
-             datapoint.low,
-             datapoint.close,
-             datapoint.volume);
-   }
+    let data_array = RawStockData::get_data_from_db(&ticker).unwrap();
+   
+    let volume_arr = RawStockData::get_specific_array(data_array, "volume");
 
+    for volume in volume_arr {
+        println!("{}", volume);
+    }
 }
