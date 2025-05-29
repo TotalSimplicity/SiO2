@@ -21,9 +21,13 @@ fn main() {
     
     let data_array = RawStockData::get_data_from_db(&ticker).unwrap();
    
-    let volume_arr = RawStockData::get_specific_array(data_array, "volume");
 
-    let lookback_len = 20;
+
+    let everex_arr = RawStockData::calculate_everex_points(&data_array, 20, 10, 3, 5);
+
+    for point in everex_arr {
+        println!("{:?}", point.signal_line);
+    }
 
    
 

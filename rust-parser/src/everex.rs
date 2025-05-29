@@ -2,6 +2,13 @@
 use crate::stockdata::RawStockData;
 use crate::averaging;
 
+pub struct EverexPoint<'a> {
+    pub datapoint: &'a RawStockData,
+    pub bar_flow: f64,
+    pub rrof: f64,
+    pub rrof_smooth: f64,
+    pub signal_line: f64,
+}
 
 impl RawStockData {
     /// Function to normalize the current volume against the previous volumes. Previous vols should NOT include current volume.
@@ -184,7 +191,77 @@ impl RawStockData {
         }
 
         let recent_rrof_smooth_values = &rrof_smooth_values[rrof_smooth_values.len() - signal_length..];
-        averaging::simple_moving_average(recent_rrof_smooth_values, signal_length)
+        let result = averaging::simple_moving_average(recent_rrof_smooth_values, signal_length);
+        result
+    }
+
+    pub fn calculate_everex_points<'a>(
+        data: &'a [RawStockData],
+        lookback_len: i64,
+        rrof_length: usize,
+        smooth_length: usize,
+        signal_length: usize,
+    ) -> Vec<EverexPoint<'a>> {
+        let mut everex_points = Vec::new();
+        let mut bar_flow_values = Vec::new();
+        let mut rrof_values = Vec::new();
+        let mut rrof_smooth_values = Vec::new();
+        let num_points = data.len();
+
+        for i in 0..num_points {
+
+            println!("Processing point {}/{}", i + 1, num_points);
+            let current_item = &data[i];
+            let previous_items = &data[0..i];
+
+            let bar_flow = if i >= lookback_len as usize {
+                Some(Self::calculate_bar_flow(current_item, previous_items, lookback_len))
+            } else {
+                None
+            };
+
+            bar_flow.map(|bf| bar_flow_values.push(bf));
+
+            let rrof = if i >= lookback_len as usize && bar_flow.is_some() && bar_flow_values.len() >= rrof_length {
+                Self::calculate_rrof(&bar_flow_values, rrof_length)
+            } else {
+                None
+            };
+
+            rrof.map(|rr| rrof_values.push(rr));
+
+            let rrof_smooth = if rrof.is_some() && rrof_values.len() >= smooth_length {
+                let val = Self::calculate_rrof_smooth(&rrof_values, smooth_length);
+                if let Some(v) = val {
+                    rrof_smooth_values.push(v);
+                }
+                val
+            } else {
+                None
+            };
+
+            let signal_line = if rrof_smooth_values.len() >= signal_length {
+                Self::calculate_signal_line(&rrof_smooth_values, signal_length)
+            } else {
+                None
+            };
+            
+            let point = EverexPoint {
+                datapoint: &data[i],
+                bar_flow: bar_flow.unwrap_or(0.0),
+                rrof: rrof.unwrap_or(0.0),
+                rrof_smooth: rrof_smooth.unwrap_or(0.0),
+                signal_line: signal_line.unwrap_or(0.0)
+            };
+
+            println!("Time: {}, Signal {:.2}, RROF_S: {:.2}", 
+                point.datapoint.timestamp, 
+                point.signal_line, 
+                point.rrof_smooth);
+            everex_points.push(point);
+        }
+
+        everex_points
     }
 
 }
