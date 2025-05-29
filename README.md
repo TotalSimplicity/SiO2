@@ -1,6 +1,6 @@
 # Quartz - SiO<sub>2</sub>
 
-A Rust based project for a OHLCV pipeline.
+A Rust based project for a OHLCV pipeline & a *high frequency*(hence the name) trading classification model. 
 
 ### Features:
 - [x] A TimescaleDB(postgres plugin) for storing and accessing stock data
